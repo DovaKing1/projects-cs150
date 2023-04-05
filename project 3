@@ -1,0 +1,288 @@
+"""
+@author: Andrew Scott
+@date: September 2016
+@author: Mark Holliday
+@date: October 15 2016, October 19, 2017, October 21, 2020
+@author ADD YOUR NAME HERE
+@date ADD THE DATE OF YOUR CHANGE HERE
+CS 150 Project 3
+Originally this is the code provided to the students for the Deal or 
+Not Deal game. The student will then add code in the game() function 
+and implement the greeting(), make_boxes(), str_prizes_remaining(),
+choose_box(), banker(), and who_won() function definitions. This code will 
+provide a greeting using greeting() and distribute the prizes randomly 
+across the closed boxes and the one player box using make_boxes(). 
+The program will then start playing rounds of the game
+until either the player accepts a deal from the banker or the player opens all 
+but one of the closed boxes. During each round the choose_box() function is
+used to have the player choose the next closed box to open. The banker then 
+comes up with the offer for the next deal. When the last round ends, the 
+who_won() function determines whether the player or the banker won in both the
+case when the player accepted adeal and the case when the player never accepts
+a deal. 
+"""
+import random
+import math
+import copy
+
+# PROVIDED VARIABLES  DO NOT EDIT
+# Short Game. Comment out if you want to play the big game above.
+prizes_remaining = [1, 10, 100, 1000, 10000, 100000]
+
+# This list holds one element which is the prize that is in the box 
+# the player chose
+player_box  = []
+
+# The boxes that have not yet been opened (but not the player's box)
+remaining_closed_boxes = []
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#@@PUT YOUR FUNCTIONS UNDER HERE @@
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+MIN = 0
+MAX = 6
+DEALER_FEE = .1
+
+def greeting() -> str:
+    """
+    This function
+
+   Returns:
+      Returns greet_string to game function.
+    """
+    number_of_boxes = len(prizes_remaining) - 1
+    greet_string = (f' \n Welcome to the Deal or No Deal game. There are {number_of_boxes} prizes '
+        f'that have been\n placed in {number_of_boxes} boxes. The {number_of_boxes} prizes are '
+        f'shown below. The list of prizes remaining\n includes the prize in the players box. So '
+        f'the number of closed boxes\n remaining is always one less than the number of '
+        f'prizes remaining.')
+    return greet_string
+
+
+def str_prizes_remaining() -> int: # prints the number two
+    """
+    This function
+
+   Returns:
+      Returns result to game function.
+    """
+    global remaining_closed_boxes
+    print("\nPrizes remaining" +"\n"+ "================")
+    result = ""
+    for index in range(len(prizes_remaining)):
+        prize_return = (prizes_remaining[index])
+        result = result + str(prize_return) + "\n"
+        index = index + 1
+    return result
+        
+
+def make_boxes() -> None:
+    """
+    This function
+
+   Returns:
+      Returns northing.
+    """
+    global remaining_closed_boxes
+    global player_box
+
+    prizes_copy = copy.copy(prizes_remaining)
+
+    list_1 = []
+    cnt = 0
+    while cnt <= len(prizes_copy) - 1:
+        num = random.randrange(len(prizes_copy) - 1)
+        list_1.append(prizes_copy[num])
+        cnt = cnt + 1
+    
+    remaining_closed_boxes = remaining_closed_boxes + list_1
+
+    num = len(prizes_copy)
+    rand_num = random.randrange(0,num)
+    player_box = prizes_copy.pop(rand_num)
+
+
+def remove_random(prizes_copy: list) -> int:
+    """
+    This function
+
+   Returns:
+      Returns pop_rand_num to game function.
+    """
+    rand_num_list = random.randrange(MIN, MAX)
+    pop_rand_num = prizes_copy.pop(rand_num_list)
+    return pop_rand_num
+
+
+def choose_box() -> None:
+    """
+    This function
+
+   Returns:
+      Returns result to game function.
+    """
+
+    global prizes_remaining
+
+    input_box = 0
+    remaining_num = len(remaining_closed_boxes)
+
+    str_remaining_closed_boxes()
+    print("")
+    selection_validation = True
+
+    num = len(remaining_closed_boxes) - 1
+    while selection_validation:
+        input_box = int(input(f"There are {num} boxes remaining numbered 1 to "
+                f"{num}. Pick a box: "))
+        
+        if input_box <= remaining_num and input_box >= 1:
+            box_result = remaining_closed_boxes.pop(input_box - 1)     #pops the chosen value off
+            result = (f"The box you opened had the prize {box_result} in it.")
+            selection_validation = False
+            prizes_remaining.remove(box_result)
+            print(result)
+        else:
+            print("An error!")
+    
+def str_remaining_closed_boxes() -> None:
+    """
+    This function
+
+   Returns:
+      Returns nothing.
+    """
+    num = len(remaining_closed_boxes) - 1
+    mystery_boxes_remain = "[?]" * num
+    print(("\nRemaining Closed Boxes" + "\n" + ("==========================") + "\n" +
+     str(mystery_boxes_remain)))
+
+def banker() -> None:
+    """
+    This function
+
+   Returns:
+      Returns dealer_offer to game function.
+    """
+    #returns an offer from the banker. avg prizes - 10%
+    prize_avg = sum(remaining_closed_boxes) / len(remaining_closed_boxes)
+    dealer_cut = prize_avg * DEALER_FEE
+    dealer_offer = round(prize_avg - dealer_cut)
+    return dealer_offer
+
+
+def who_won(was_deal_made, offer) -> str: # dealer_offer
+    """
+    This function
+
+   Returns:
+      Returns result to game function.
+    """
+    #returns a string about who won
+    global player_box
+    player_box_total = player_box
+    dealer_offer = 0
+    result = 0
+    closed_box_total = len(remaining_closed_boxes)
+    if was_deal_made == True:
+        if player_box_total < offer:
+            result = (f" In the player's box was: {player_box_total}\n" 
+                    f" The deal was for: {offer} \n"
+                    f" Banker wins. \n") #banker wins
+        if player_box_total == offer:
+            result = (f" In the player's box was: {player_box_total} \n"
+                    f" The deal was for: {offer} \n"
+                    f" Congratulations. You defeated the banker. \n") #player wins
+
+        if player_box_total < offer:
+            result = (f" In the player's box was: {player_box_total} \n"
+                    f" The deal was for: {offer} \n"
+                    f" Congratulations. You defeated the banker. \n") #player wins
+    else:
+        # was_deal_made == False
+        if player_box_total > closed_box_total:
+            result = (f" In the player's box the prize is: {player_box_total} \n"
+                    f" In the remaining closed box the prize is: {remaining_closed_boxes} \n"
+                    f" Congratulations. You defeated the banker. \n")          #player wins
+        else:
+            result = (f"In the player's box is: {player_box_total} \n"
+                    f" In the remaining closed box the prize is: {remaining_closed_boxes} \n"
+                    f" Banker wins.") #banker wins
+    return result
+        
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#@DO NOT EDIT THE CODE BELOW HERE, READ IT THOUGH @
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  
+def game():
+    '''Plays the game of deal or no deal as described in the start of file
+    comment.
+    PROVIDED CODE DO NOT EDIT THIS FUNCTION
+    '''
+    # The greeting
+    print(greeting())
+    
+    # Make the boxes
+    make_boxes()
+    
+    deal = False;
+    offer = 0
+    
+    # Display the prizes
+    print(str_prizes_remaining())
+
+    # While the player has not dealed and there are boxes remaining.
+    while (deal == False and len(remaining_closed_boxes) > 1): # prints none for some reason
+        # Player chooses which box to open
+        choose_box()
+        # prize_selected = choose_box()   # useful return value for unit tests
+        
+        # Display the prizes
+        print(str_prizes_remaining())
+        
+        # banker makes an offer
+        offer = banker()
+        
+        # player choooses to deal or no deal (other inputs ignored and 
+        # asked again)
+        valid = False
+        
+        #While the user's input is invalid ask again.
+        while (valid == False and len(remaining_closed_boxes) > 1):
+            answer = input("The banker has offered " + str(offer) 
+                + " deal or no deal? ")
+        
+            if (answer == "deal"):
+                deal = True
+                valid = True;
+            elif (answer == "no deal"):
+                deal = False
+                valid = True;
+     
+    print(str_prizes_remaining())
+       
+    if (deal == True):
+        print("You have accepted: ", str(offer), ". Thank you for playing.\n")
+
+    # Who won you or the banker?
+    print(who_won(deal, offer))
+    # print(who_won(deal, offer)[1])
+        # the unit tests in test_deal_or_no_deal.py
+        # expects that who_won() returns two values: 
+        # a boolean and the string message to be printed
+        # you can use either the approach of who_won() just
+        # returning the string or returning the array of 
+        # the string and the boolean
+            
+def main():
+    """
+    This function just calls the game() function currently so it could be
+    eliminated.
+    """
+    game()
+    # print("prizes_remaining: ", prizes_remaining)
+    # print("remaining_closed_boxes: ", remaining_closed_boxes)
+    # print("player_box: ", player_box)
+   
+main()
